@@ -189,10 +189,10 @@ def main():
         st.session_state.model_name = model_options[selected_model]
         
         # List available models button
-        if api_key and st.button("🔍 List Available Models"):
+        if st.session_state.api_key and st.button("🔍 List Available Models"):
             with st.spinner("Fetching available models..."):
                 try:
-                    genai.configure(api_key=api_key.strip())
+                    genai.configure(api_key=st.session_state.api_key.strip())
                     models = genai.list_models()
                     st.markdown("**Available Models:**")
                     for model in models:
@@ -232,11 +232,11 @@ def main():
     
     # Chat input
     if prompt := st.chat_input("What would you like to know?"):
-        if not api_key:
+        if not st.session_state.api_key:
             st.error("Please enter your Gemini API key in the sidebar first.")
             return
         
-        if not api_key.strip():
+        if not st.session_state.api_key.strip():
             st.error("API key cannot be empty. Please enter a valid key.")
             return
             
@@ -248,7 +248,7 @@ def main():
         # Get AI response
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = get_gemini_response(prompt, api_key, st.session_state.model_name)
+                response = get_gemini_response(prompt, st.session_state.api_key, st.session_state.model_name)
                 st.markdown(response)
         
         # Add assistant response to chat history
