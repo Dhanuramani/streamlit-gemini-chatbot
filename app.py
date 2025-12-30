@@ -79,12 +79,31 @@ def main():
     # Sidebar for API key
     with st.sidebar:
         st.header("Configuration")
-        api_key = st.text_input(
+        
+        # Initialize API key in session state
+        if "api_key" not in st.session_state:
+            st.session_state.api_key = ""
+        
+        # API key input with session persistence
+        api_key_input = st.text_input(
             "Enter your Gemini API Key:",
+            value=st.session_state.api_key,
             type="password",
             help="Get your API key from Google AI Studio",
-            placeholder="AIza..."
+            placeholder="AIza...",
+            key="api_key_input"
         )
+        
+        # Update session state when key changes
+        if api_key_input != st.session_state.api_key:
+            st.session_state.api_key = api_key_input
+        
+        api_key = st.session_state.api_key
+        
+        # Clear API key button
+        if api_key and st.button("🗑️ Clear API Key"):
+            st.session_state.api_key = ""
+            st.rerun()
         
         if api_key:
             if st.button("Test Connection"):
@@ -96,6 +115,24 @@ def main():
                     else:
                         st.error(f"❌ {message}")
                         st.session_state.api_key_valid = False
+        
+        # Show API key status
+        if api_key:
+            key_length = len(api_key.strip())
+            if key_length < 30:
+                st.warning(f"⚠️ API key seems short ({key_length} chars)")
+            elif api_key.strip().startswith('AIza'):
+                st.success("✓ API key format looks correct")
+                st.info("🔒 API key saved for this session")
+            else:
+                st.warning("⚠️ API key should start with 'AIza'")
+            
+            # Show first/last few characters for verification
+            if len(api_key.strip()) > 10:
+                masked_key = api_key.strip()[:6] + "..." + api_key.strip()[-4:]
+                st.info(f"Key preview: {masked_key}")
+        else:
+            st.info("👆 Enter your API key above to get started")
         
         # Troubleshooting section
         with st.expander("🔧 Troubleshooting"):
@@ -121,27 +158,6 @@ def main():
             - Check if Gemini is **available in your country**
             - Make sure you're signed into the **correct Google account**
             """)
-        
-        # API Key validation helper
-        if api_key:
-            st.markdown("**API Key Analysis:**")
-            key_clean = api_key.strip()
-            
-            # Format checks
-            if key_clean.startswith('AIza'):
-                st.success("✅ Starts with 'AIza'")
-            else:
-                st.error("❌ Should start with 'AIza'")
-            
-            if len(key_clean) >= 35:
-                st.success(f"✅ Length OK ({len(key_clean)} chars)")
-            else:
-                st.error(f"❌ Too short ({len(key_clean)} chars)")
-            
-            # Show first/last few characters for verification
-            if len(key_clean) > 10:
-                masked_key = key_clean[:6] + "..." + key_clean[-4:]
-                st.info(f"Key preview: {masked_key}")
         
         
         st.markdown("---")
